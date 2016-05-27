@@ -1140,9 +1140,6 @@ uint32 FrameBufferManager::ComputeCImgHeight(SetImgInfo &info, uint32 &height)
             case RDP_SETCIMG:
                 goto step2;
                 break;
-            case RDP_SETCIMG:
-                goto step2;
-                break;
             default:
                 break;
         }
