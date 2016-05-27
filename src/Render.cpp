@@ -83,7 +83,7 @@ CRender::CRender() :
         m_Mux(0),
         m_bBlendModeValid(FALSE)
 {
-    int i;
+    uint32 i;
     InitRenderBase();
 
     for( i=0; i<MAX_TEXTURES; i++ )
@@ -1329,7 +1329,7 @@ bool CRender::DrawTriangles()
         TurnFogOnOff(false);
     }
 
-    for( int t=0; t<2; t++ )
+    for( uint32 t=0; t<2; t++ )
     {
         float halfscaleS = 1;
 
@@ -1448,7 +1448,7 @@ bool CRender::DrawTriangles()
 
 inline int ReverseCITableLookup(uint32 *pTable, int size, uint32 val)
 {
-    for( int i=0; i<size; i++)
+    for( uint32 i=0; i<size; i++)
     {
         if( pTable[i] == val )
             return i;
@@ -1488,7 +1488,7 @@ bool SaveCITextureToFile(TxtrCacheEntry &entry, char *filename, bool bShow, bool
         tableSize = 16;
         pTable = new uint32[16];
 
-        for( int i=0; i<16; i++ )
+        for( uint32 i=0; i<16; i++ )
         {
             pTable[i] = entry.ti.TLutFmt == TLUT_FMT_RGBA16 ? Convert555ToRGBA(pPal[i^1]) : ConvertIA16ToRGBA(pPal[i^1]);
         }
@@ -1499,7 +1499,7 @@ bool SaveCITextureToFile(TxtrCacheEntry &entry, char *filename, bool bShow, bool
         tableSize = 256;
         pTable = new uint32[256];
 
-        for( int i=0; i<256; i++ )
+        for( uint32 i=0; i<256; i++ )
         {
             pTable[i] = entry.ti.TLutFmt == TLUT_FMT_RGBA16 ? Convert555ToRGBA(pPal[i^1]) : ConvertIA16ToRGBA(pPal[i^1]);
         }
@@ -1522,7 +1522,7 @@ bool SaveCITextureToFile(TxtrCacheEntry &entry, char *filename, bool bShow, bool
         for( int i=height-1; i>=0; i--)
         {
             uint32 *pSrc = (uint32*)((unsigned char*)srcInfo.lpSurface+srcInfo.lPitch * i);
-            for( int j=0; j<width; j++)
+            for( uint32 j=0; j<width; j++)
             {
                 int val = ReverseCITableLookup(pTable, tableSize, *pSrc);
                 pSrc++;
@@ -1650,7 +1650,7 @@ void CRender::SaveTextureToFile(CTexture &texture, char *filename, TextureChanne
                 for( int i=height-1; i>=0; i--)
                 {
                     unsigned char *pSrc = (unsigned char*)srcInfo.lpSurface+srcInfo.lPitch * i;
-                    for( int j=0; j<width; j++)
+                    for( uint32 j=0; j<width; j++)
                     {
                         if( channel == TXT_ALPHA )
                         {

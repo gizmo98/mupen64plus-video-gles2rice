@@ -275,7 +275,7 @@ bool FrameBufferManager::HasAddrBeenDisplayed(uint32 addr, uint32 width)
 
 int FrameBufferManager::FindRecentCIInfoIndex(uint32 addr)
 {
-    for( int i=0; i<numOfRecentCIInfos; i++ )
+    for( uint32 i=0; i<numOfRecentCIInfos; i++ )
     {
         if( g_uRecentCIInfoPtrs[i]->dwAddr <= addr && addr < g_uRecentCIInfoPtrs[i]->dwAddr+g_uRecentCIInfoPtrs[i]->dwMemSize )
         {
@@ -299,55 +299,49 @@ bool FrameBufferManager::IsDIaRenderTexture()
 
     uint32 dwPC = gDlistStack[gDlistStackPointer].pc;       // This points to the next instruction
 
-    for( int i=0; i<10; i++ )
+    for( uint32 i=0; i<10; i++ )
     {
         uint32 w0 = *(uint32 *)(g_pRDRAMu8 + dwPC + i*8);
         uint32 w1 = *(uint32 *)(g_pRDRAMu8 + dwPC + 4 + i*8);
 
-        if( (w0>>24) == RDP_SETSCISSOR )
+        switch( w0>>24 )
         {
-            foundSetScissor = true;
-            continue;
-        }
+            case RDP_SETSCISSOR:
+                foundSetScissor = true;
+                continue;
+                break;
+            case RDP_SETFILLCOLOR:
+                foundSetFillColor = true;
+                newFillColor = w1;
+                continue;
+                break;
+            case RDP_FILLRECT:
+                uint32 x0   = ((w1>>12)&0xFFF)/4;
+                uint32 y0   = ((w1>>0 )&0xFFF)/4;
+                uint32 x1   = ((w0>>12)&0xFFF)/4;
 
-        if( (w0>>24) == RDP_SETFILLCOLOR )
-        {
-            foundSetFillColor = true;
-            newFillColor = w1;
-            continue;
-        }
-
-        if( (w0>>24) == RDP_FILLRECT )
-        {
-            uint32 x0   = ((w1>>12)&0xFFF)/4;
-            uint32 y0   = ((w1>>0 )&0xFFF)/4;
-            uint32 x1   = ((w0>>12)&0xFFF)/4;
-
-            if( x0 == 0 && y0 == 0 )
-            {
-                if( x1 == g_CI.dwWidth )
+                if( x0 == 0 && y0 == 0 )
                 {
-                    foundFillRect = true;
-                    continue;
+                    if( x1 == g_CI.dwWidth )
+                    {
+                        foundFillRect = true;
+                        continue;
+                    }
+
+                    if(x1 == (unsigned int)(g_CI.dwWidth-1))
+                    {
+                        foundFillRect = true;
+                        continue;
+                    }
                 }
-
-                if(x1 == (unsigned int)(g_CI.dwWidth-1))
-                {
-                    foundFillRect = true;
-                    continue;
-                }
-            }
-        }   
-
-        if( (w0>>24) == RDP_TEXRECT )
-        {
-            break;
-        }
-
-        if( (w0>>24) == RDP_SETCIMG )
-        {
-            foundSetCImg = true;
-            break;
+                break;
+            case RDP_TEXRECT:
+                break;
+            case RDP_SETCIMG:
+                foundSetCImg = true;
+                break;
+            default:
+                break;
         }
     }
 
@@ -402,7 +396,7 @@ int FrameBufferManager::CheckAddrInBackBuffers(uint32 addr, uint32 memsize, bool
         // Also check if the address is overwritten by a recent render_texture
         //int t = CheckAddrInRenderTextures(addr,false);
         int t =-1;
-        for( int i=0; i<numOfTxtBufInfos; i++ )
+        for( uint32 i=0; i<numOfTxtBufInfos; i++ )
         {
             uint32 bufHeight = gRenderTextureInfos[i].knownHeight ? gRenderTextureInfos[i].N64Height : gRenderTextureInfos[i].maxUsedHeight;
             uint32 bufMemSize = gRenderTextureInfos[i].CI_Info.dwSize*gRenderTextureInfos[i].N64Width*bufHeight;
@@ -435,7 +429,7 @@ int FrameBufferManager::CheckAddrInBackBuffers(uint32 addr, uint32 memsize, bool
 
 uint8 CIFindIndex(uint16 val)
 {
-    for( int i=0; i<=0xFF; i++ )
+    for( uint32 i=0; i<=0xFF; i++ )
     {
         if( val == g_wRDPTlut[i] )
         {
@@ -1104,51 +1098,49 @@ uint32 FrameBufferManager::ComputeCImgHeight(SetImgInfo &info, uint32 &height)
 {
     uint32 dwPC = gDlistStack[gDlistStackPointer].pc;       // This points to the next instruction
 
-    for( int i=0; i<10; i++ )
+    for( uint32 i=0; i<10; i++ )
     {
         uint32 w0 = *(uint32 *)(g_pRDRAMu8 + dwPC + i*8);
         uint32 w1 = *(uint32 *)(g_pRDRAMu8 + dwPC + 4 + i*8);
 
-        if( (w0>>24) == RDP_SETSCISSOR )
+        switch( w0>>24 )
         {
-            height   = ((w1>>0 )&0xFFF)/4;
-            TXTRBUF_DETAIL_DUMP(TRACE1("buffer height = %d", height));
-            return RDP_SETSCISSOR;
-        }
+            case RDP_SETSCISSOR:
+                height   = ((w1>>0 )&0xFFF)/4;
+                TXTRBUF_DETAIL_DUMP(TRACE1("buffer height = %d", height));
+                return RDP_SETSCISSOR;
+                break;
+            case RDP_FILLRECT:
+                uint32 x0   = ((w1>>12)&0xFFF)/4;
+                uint32 y0   = ((w1>>0 )&0xFFF)/4;
+                uint32 x1   = ((w0>>12)&0xFFF)/4;
+                uint32 y1   = ((w0>>0 )&0xFFF)/4;
 
-        if( (w0>>24) == RDP_FILLRECT )
-        {
-            uint32 x0   = ((w1>>12)&0xFFF)/4;
-            uint32 y0   = ((w1>>0 )&0xFFF)/4;
-            uint32 x1   = ((w0>>12)&0xFFF)/4;
-            uint32 y1   = ((w0>>0 )&0xFFF)/4;
-
-            if( x0 == 0 && y0 == 0 )
-            {
-                if( x1 == info.dwWidth )
+                if( x0 == 0 && y0 == 0 )
                 {
-                    height = y1;
-                    TXTRBUF_DETAIL_DUMP(TRACE1("buffer height = %d", height));
-                    return RDP_FILLRECT;
+                    if( x1 == info.dwWidth )
+                    {
+                        height = y1;
+                        TXTRBUF_DETAIL_DUMP(TRACE1("buffer height = %d", height));
+                        return RDP_FILLRECT;
+                    }
+
+                    if(x1 == (unsigned int)(info.dwWidth-1))
+                    {
+                        height = y1+1;
+                        TXTRBUF_DETAIL_DUMP(TRACE1("buffer height = %d", height));
+                        return RDP_FILLRECT;
+                    }
                 }
-
-                if(x1 == (unsigned int)(info.dwWidth-1))
-                {
-                    height = y1+1;
-                    TXTRBUF_DETAIL_DUMP(TRACE1("buffer height = %d", height));
-                    return RDP_FILLRECT;
-                }
-            }
-        }   
-
-        if( (w0>>24) == RDP_SETCIMG )
-        {
-            goto step2;
-        }
-
-        if( (w0>>24) == RDP_SETCIMG )
-        {
-            goto step2;
+                break;
+            case RDP_SETCIMG:
+                goto step2;
+                break;
+            case RDP_SETCIMG:
+                goto step2;
+                break;
+            default:
+                break;
         }
     }
 
@@ -1201,7 +1193,7 @@ int FrameBufferManager::CheckRenderTexturesWithNewCI(SetImgInfo &CIinfo, uint32 
     int matchidx = -1;
     uint32 memsize = ((height*CIinfo.dwWidth)>>1)<<CIinfo.dwSize;
 
-    for( int i=0; i<numOfTxtBufInfos; i++ )
+    for( uint32 i=0; i<numOfTxtBufInfos; i++ )
     {
         RenderTextureInfo &info = gRenderTextureInfos[i];
         if( !info.isUsed )  continue;
@@ -1273,7 +1265,7 @@ int FrameBufferManager::FindASlot(void)
 
     // Find an empty slot
     bool found = false;
-    for( int i=0; i<numOfTxtBufInfos; i++ )
+    for( uint32 i=0; i<numOfTxtBufInfos; i++ )
     {
         if( !gRenderTextureInfos[i].isUsed && gRenderTextureInfos[i].updateAtFrame < status.gDlistCount )
         {
@@ -1288,7 +1280,7 @@ int FrameBufferManager::FindASlot(void)
     {
         uint32 oldestCount=0xFFFFFFFF;
         uint32 oldestIdx = 0;
-        for( int i=0; i<numOfTxtBufInfos; i++ )
+        for( uint32 i=0; i<numOfTxtBufInfos; i++ )
         {
             if( gRenderTextureInfos[i].updateAtUcodeCount < oldestCount )
             {
@@ -1489,7 +1481,7 @@ void InitTlutReverseLookup(void)
     if( RevTlutTableNeedUpdate )
     {
         memset(RevTlutTable, 0, 0x10000);
-        for( int i=0; i<=0xFF; i++ )
+        for( uint32 i=0; i<=0xFF; i++ )
         {
             RevTlutTable[g_wRDPTlut[i]] = uint8(i);
         }
@@ -1517,7 +1509,7 @@ void FrameBufferManager::CopyBackToFrameBufferIfReadByCPU(uint32 addr)
 // We do these checks to see if a render_texture operation is occurring...
 void FrameBufferManager::CheckRenderTextureCRCInRDRAM(void)
 {
-    for( int i=0; i<numOfTxtBufInfos; i++ )
+    for( uint32 i=0; i<numOfTxtBufInfos; i++ )
     {
         if( !gRenderTextureInfos[i].isUsed )    
             continue;
@@ -1547,7 +1539,7 @@ void FrameBufferManager::CheckRenderTextureCRCInRDRAM(void)
 // Check render_texture memory addresses
 int FrameBufferManager::CheckAddrInRenderTextures(uint32 addr, bool checkcrc)
 {
-    for( int i=0; i<numOfTxtBufInfos; i++ )
+    for( uint32 i=0; i<numOfTxtBufInfos; i++ )
     {
         if( !gRenderTextureInfos[i].isUsed )    
             continue;

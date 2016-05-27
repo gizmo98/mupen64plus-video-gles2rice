@@ -105,7 +105,7 @@ XMATRIX& XMATRIX::operator -= ( const XMATRIX &pIn )
 
 XMATRIX& XMATRIX::operator *= ( float f)
 {
-    for (int i=0; i<16; i++)
+    for (unsigned int i=0; i<16; i++)
     {
         ((float*)m)[i] *= f;
     }
@@ -115,7 +115,7 @@ XMATRIX& XMATRIX::operator *= ( float f)
 
 XMATRIX& XMATRIX::operator /= ( float f)
 {
-    for (int i=0; i<16; i++)
+    for (unsigned int i=0; i<16; i++)
     {
         ((float*)m)[i] /= f;
     }
@@ -132,7 +132,7 @@ XMATRIX XMATRIX::operator - () const
 {
     XMATRIX mTemp;
     
-    for (int i=0; i<16; i++)
+    for (unsigned int i=0; i<16; i++)
     {
         ((float*)mTemp.m)[i] = -((float*)m)[i];
     }
@@ -144,9 +144,9 @@ XMATRIX XMATRIX::operator * ( const XMATRIX &pIn ) const
 {
     XMATRIX mTemp;
     
-    for (int i=0; i<4; i++)
+    for (unsigned int i=0; i<4; i++)
     {
-        for (int j=0; j<4; j++)
+        for (unsigned int j=0; j<4; j++)
         {
             mTemp.m[i][j] = m[i][0]*pIn.m[0][j] +
                             m[i][1]*pIn.m[1][j] +
@@ -162,7 +162,7 @@ XMATRIX XMATRIX::operator + ( const XMATRIX &pIn ) const
 {
     XMATRIX mTemp;
     
-    for (int i=0; i<16; i++)
+    for (unsigned int i=0; i<16; i++)
     {
         ((float*)mTemp.m)[i] = ((float*)m)[i] + ((float*)pIn.m)[i];
     }
@@ -174,7 +174,7 @@ XMATRIX XMATRIX::operator - ( const XMATRIX &pIn ) const
 {
     XMATRIX mTemp;
     
-    for (int i=0; i<16; i++)
+    for (unsigned int i=0; i<16; i++)
     {
         ((float*)mTemp.m)[i] = ((float*)m)[i] - ((float*)pIn.m)[i];
     }

@@ -278,7 +278,7 @@ COGL_FragmentProgramCombiner::COGL_FragmentProgramCombiner(CRender *pRender)
 COGL_FragmentProgramCombiner::~COGL_FragmentProgramCombiner()
 {
     int size = m_vCompiledShaders.size();
-    for (int i=0; i<size; i++)
+    for (unsigned int i=0; i<size; i++)
     {
         GLuint ID = m_vCompiledShaders[i].programID;
         glDeleteProgram(ID);
@@ -437,9 +437,9 @@ void COGL_FragmentProgramCombiner::GenerateProgramStr()
     bool bNeedT0 = false, bNeedT1 = false, bNeedComb2 = false;
     newFPBody[0] = 0;
 
-    for( int cycle=0; cycle<2; cycle++ )
+    for( unsigned int cycle=0; cycle<2; cycle++ )
     {
-        for( int channel=0; channel<2; channel++)
+        for( unsigned int channel=0; channel<2; channel++)
         {
             char* (*func)(uint8) = channel==0?MuxToOC:MuxToOA;
             char *dst = channel==0?(char*)"rgb":(char*)"a";
