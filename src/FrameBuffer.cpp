@@ -316,6 +316,7 @@ bool FrameBufferManager::IsDIaRenderTexture()
                 continue;
                 break;
             case RDP_FILLRECT:
+            {
                 uint32 x0   = ((w1>>12)&0xFFF)/4;
                 uint32 y0   = ((w1>>0 )&0xFFF)/4;
                 uint32 x1   = ((w0>>12)&0xFFF)/4;
@@ -335,6 +336,7 @@ bool FrameBufferManager::IsDIaRenderTexture()
                     }
                 }
                 break;
+            }
             case RDP_TEXRECT:
                 break;
             case RDP_SETCIMG:
@@ -1111,28 +1113,30 @@ uint32 FrameBufferManager::ComputeCImgHeight(SetImgInfo &info, uint32 &height)
                 return RDP_SETSCISSOR;
                 break;
             case RDP_FILLRECT:
-                uint32 x0   = ((w1>>12)&0xFFF)/4;
-                uint32 y0   = ((w1>>0 )&0xFFF)/4;
-                uint32 x1   = ((w0>>12)&0xFFF)/4;
-                uint32 y1   = ((w0>>0 )&0xFFF)/4;
-
-                if( x0 == 0 && y0 == 0 )
                 {
-                    if( x1 == info.dwWidth )
-                    {
-                        height = y1;
-                        TXTRBUF_DETAIL_DUMP(TRACE1("buffer height = %d", height));
-                        return RDP_FILLRECT;
-                    }
+                    uint32 x0   = ((w1>>12)&0xFFF)/4;
+                    uint32 y0   = ((w1>>0 )&0xFFF)/4;
+                    uint32 x1   = ((w0>>12)&0xFFF)/4;
+                    uint32 y1   = ((w0>>0 )&0xFFF)/4;
 
-                    if(x1 == (unsigned int)(info.dwWidth-1))
+                    if( x0 == 0 && y0 == 0 )
                     {
-                        height = y1+1;
-                        TXTRBUF_DETAIL_DUMP(TRACE1("buffer height = %d", height));
-                        return RDP_FILLRECT;
+                        if( x1 == info.dwWidth )
+                        {
+                            height = y1;
+                            TXTRBUF_DETAIL_DUMP(TRACE1("buffer height = %d", height));
+                            return RDP_FILLRECT;
+                        }
+
+                        if(x1 == (unsigned int)(info.dwWidth-1))
+                        {
+                            height = y1+1;
+                            TXTRBUF_DETAIL_DUMP(TRACE1("buffer height = %d", height));
+                            return RDP_FILLRECT;
+                        }
                     }
+                    break;
                 }
-                break;
             case RDP_SETCIMG:
                 goto step2;
                 break;
